@@ -10,14 +10,23 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using TrialAzureSearch.Models;
+using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 
 namespace TrialAzureSearch
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IHostEnvironment env)
         {
-            Configuration = configuration;
+            //構成ファイル、環境変数等から、構成情報をロード
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(env.ContentRootPath)
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                //.AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                .AddEnvironmentVariables();
+
+            Configuration = builder.Build();
         }
 
         public IConfiguration Configuration { get; }
@@ -26,6 +35,7 @@ namespace TrialAzureSearch
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services.Configure<Azuresearchconfig>(this.Configuration.GetSection("AzureSearchConfig"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
