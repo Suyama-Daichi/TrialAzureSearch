@@ -30,23 +30,34 @@ namespace TrialAzureSearch.Controllers
         {
             _azureSearchConfig = config.Value;
             _serviceClient = new SearchServiceClient(_azureSearchConfig.SearchServiceName, new SearchCredentials(_azureSearchConfig.SearchServiceAdminApiKey));
-            _indexClient = _serviceClient.Indexes.GetClient(_azureSearchConfig.SearchIndexName);
             _logger = logger;
         }
 
         [Route("search")]
         [HttpPost]
-        public async Task<ActionResult> AzureSearch(SearchData model)
+        public async Task<ActionResult> AzureSearch(SearchData<Hotel> model, string indexName)
         {
             if (string.IsNullOrEmpty(model.searchText))
             {
                 model.searchText = string.Empty;
             }
 
-            return await RunQueryAsync(model);
+            return await RunQueryAsync(model, indexName);
         }
 
-        private async Task<ActionResult> RunQueryAsync(SearchData model)
+        [Route("searchCosmos")]
+        [HttpPost]
+        public async Task<ActionResult> AzureSearch(SearchData<TrialSearchCosmos> model, string indexName)
+        {
+            if (string.IsNullOrEmpty(model.searchText))
+            {
+                model.searchText = string.Empty;
+            }
+            return await RunQueryAsync(model, indexName);
+        }
+
+
+        private async Task<ActionResult> RunQueryAsync<T>(SearchData<T> model, string indexName)
         {
             var parameters = new SearchParameters
             {
@@ -56,7 +67,7 @@ namespace TrialAzureSearch.Controllers
             };
 
             // For efficiency, the search call should be asynchronous, so use SearchAsync rather than Search.
-            model.resultList = await _indexClient.Documents.SearchAsync<Hotel>(model.searchText, parameters);
+            model.resultList = await _serviceClient.Indexes.GetClient(indexName).Documents.SearchAsync<T>(model.searchText);
 
             return Ok(model.resultList);
         }

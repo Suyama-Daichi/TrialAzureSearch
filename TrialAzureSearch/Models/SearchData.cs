@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace TrialAzureSearch.Models
 {
-    public class SearchData
+    public class SearchData<T>
     {
         // The text to search for.
         public string searchText { get; set; }
 
         // The list of results.
-        public DocumentSearchResult<Hotel> resultList;
+        public DocumentSearchResult<T> resultList;
     }
 }
