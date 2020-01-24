@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Search;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using TrialAzureSearch.Models;
+using TrialAzureSearch.Services;
 
 namespace TrialAzureSearch.Controllers
 {
@@ -19,11 +21,13 @@ namespace TrialAzureSearch.Controllers
         };
 
         private readonly ILogger<TrialAzureSearchController> _logger;
-        private Azuresearchconfig _appsettings = null;
+        private Azuresearchconfig _azureSearchConfig = null;
+        private SearchServiceClient _serviceClient = null;
 
-        public TrialAzureSearchController(ILogger<TrialAzureSearchController> logger, IOptions<Azuresearchconfig> options)
+        public TrialAzureSearchController(ILogger<TrialAzureSearchController> logger, IOptions<Azuresearchconfig> config)
         {
-            _appsettings = options.Value;
+            _azureSearchConfig = config.Value;
+            _serviceClient = new SearchServiceClient(_azureSearchConfig.SearchServiceName, new SearchCredentials(_azureSearchConfig.SearchServiceAdminApiKey));
             _logger = logger;
         }
 
@@ -31,6 +35,7 @@ namespace TrialAzureSearch.Controllers
         [HttpGet]
         public async Task<IEnumerable<WeatherForecast>> AzureSearch()
         {
+
             var rng = new Random();
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {
