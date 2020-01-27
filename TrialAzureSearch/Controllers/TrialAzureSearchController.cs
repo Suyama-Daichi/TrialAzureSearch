@@ -35,41 +35,32 @@ namespace TrialAzureSearch.Controllers
 
         [Route("search")]
         [HttpPost]
-        public async Task<ActionResult> AzureSearch(SearchData<Hotel> model, string indexName)
+        public async Task<DocumentSearchResult<Hotel>> AzureSearch(SearchData<Hotel> model, string indexName)
         {
             if (string.IsNullOrEmpty(model.searchText))
             {
                 model.searchText = string.Empty;
             }
-
-            return await RunQueryAsync(model, indexName);
+            return await new SearchService(_serviceClient).RunQueryAsync(model, indexName);
         }
 
         [Route("searchCosmos")]
         [HttpPost]
-        public async Task<ActionResult> AzureSearch(SearchData<TrialSearchCosmos> model, string indexName)
+        public async Task<DocumentSearchResult<TrialSearchCosmos>> AzureSearch(SearchData<TrialSearchCosmos> model, string indexName)
         {
             if (string.IsNullOrEmpty(model.searchText))
             {
-                model.searchText = string.Empty;
+                model.searchText = "*";
             }
-            return await RunQueryAsync(model, indexName);
+            return await new SearchService(_serviceClient).RunQueryAsync(model, indexName);
         }
 
+        //[Route("updateIndex")]
+        //[HttpPost]
+        //public async Task<ActionResult> UpdateIndex(string indexName)
+        //{
+        //}
 
-        private async Task<ActionResult> RunQueryAsync<T>(SearchData<T> model, string indexName)
-        {
-            var parameters = new SearchParameters
-            {
-                // Enter Hotel property names into this list so only these values will be returned.
-                // If Select is empty, all values will be returned, which can be inefficient.
-                Select = new[] { "HotelName", "Description" }
-            };
 
-            // For efficiency, the search call should be asynchronous, so use SearchAsync rather than Search.
-            model.resultList = await _serviceClient.Indexes.GetClient(indexName).Documents.SearchAsync<T>(model.searchText);
-
-            return Ok(model.resultList);
-        }
     }
 }
